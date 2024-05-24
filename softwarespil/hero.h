@@ -13,22 +13,40 @@
 class Hero
 {
 
-    public;
+public:
 
 
     Hero();
+    /*
     ~Hero();
+*/
+    void init(QVariantList name, QVariantList hp, QVariantList styrke, QVariantList lv, QVariantList xp);
 
-    void attack();
+    void create();
 
-    void gain();
+    int attack();
 
-    void load(std::string Hname);
+    void gain(int xp);
+
+    void load(int hero_pick);
 
     int chekhp();
 
     void getHero(int heroId);
 
+    void printheroes();
+
+    void takeDamage(int damage);
+
+    std::string name();
+
+    int getHpForHeroId(std::string Hname);
+
+    void deletehero();
+
+    void sethp(int hp);
+
+    void showStats(std::string Hname);
 
 private:
 
@@ -38,6 +56,7 @@ private:
         int clv;
         int cxp;
         QVariantList mName, mHp, mStyrke, mLv, mXp;
+        QSqlQuery mQuery, assignmentQuery, updateQuery, durationQuery;
 
 };
 

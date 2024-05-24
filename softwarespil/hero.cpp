@@ -1,30 +1,39 @@
-#include"hero.h"
+#include "hero.h"
+#include <QtSql>
+#include <QSqlDatabase>
+#include <iostream>
+#include <string>
+#include <vector>
+#include <iomanip>
+#include <chrono>
+#include <thread>
 
-
+//database med heros
 Hero::Hero(){
-    mQuery.exec("DROP TABLE IF EXISTS Heros");
-    mQuery.exec("CREATE TABLE Heros ("
+    mQuery.exec("CREATE TABLE IF NOT EXISTS Heros ("
                 "hero_id INT PRIMARY KEY AUTO_INCREMENT,"
                 "name CHAR(125),"
                 "hp INT,"
-                "styrke INT UNSIGNED,"
-                "lv INT UNSIGNED,"
-                "xp INT UNSIGNED");
+                "styrke INT,"
+                "lv INT,"
+                "xp INT)");
 
     cname = "";
     chp = 0;
     cstyrke = 0;
     clv = 0;
     cxp = 0;
+
 }
 
 
+/*
 Hero::~Hero() {
     mQuery.exec("DROP TABLE IF EXISTS Heros");
 }
+*/
 
-
-
+//funktion til at sætte basic hero in så hvis amn klikker load uden at lave en hero så er der en i forvvejen
 void Hero::init(QVariantList name,QVariantList hp,QVariantList styrke,QVariantList lv,QVariantList xp){
 
 
@@ -49,7 +58,7 @@ void Hero::init(QVariantList name,QVariantList hp,QVariantList styrke,QVariantLi
     }
 }
 
-
+//funktioner til at angribe, tjekke hp og tage skade, og til at finde navn på nuværende helt(kunne også bruge id)
 int Hero::attack(){
 
     return cstyrke;
@@ -70,53 +79,46 @@ std::string Hero::name(){
     return cname;
 }
 
-
+// funktion til at finde den nuværendes helt hp fra data basen så det kan resettes når man taber eller vinder
 int Hero::getHpForHeroId(std::string Hname) {
-
-
-    // Prepare a SELECT query to retrieve hp for a specific hero_id
     mQuery.prepare("SELECT hp FROM Heros WHERE name = :Hname");
-    mQuery.bindValue(":Hname", Hname);
+    mQuery.bindValue(":Hname", QString::fromStdString(Hname));
 
     if (!mQuery.exec()) {
         qDebug() << "Error executing query:" << mQuery.lastError().text();
-        return 0; // or suitable error handling
+        return 0;
     }
 
-    // Check if there is a result
     if (mQuery.next()) {
-        // Extract the value of 'hp' from the result row
         return mQuery.value("hp").toInt();
     } else {
-        qDebug() << "No hero found with hero_id:" << heroId;
-        return 0; // or suitable error handling
+        qDebug() << "No hero found with hero name:" << QString::fromStdString(Hname);
+        return 0;
     }
 
 }
-
-void sethp(int hp){
-
+// resetter hp
+void Hero::sethp(int hp){
     chp=hp;
 }
 
 
 
+// loader hero
+void Hero::load(int hero_pick) {
+    mQuery.prepare("SELECT * FROM Heros WHERE hero_id = :hero_pick");
+    mQuery.bindValue(":hero_pick", hero_pick);
 
-void Hero::load(int heroId) {
-    query.prepare("SELECT * FROM Heros WHERE hero_id = :id");
-    query.bindValue(":id", heroId);
+    if (mQuery.exec()) {
+        if (mQuery.next()) {
 
+            std::string name = mQuery.value("name").toString().toStdString();
+            int hp = mQuery.value("hp").toInt();
+            int styrke = mQuery.value("styrke").toInt();
+            int lv = mQuery.value("lv").toInt();
+            int xp = mQuery.value("xp").toInt();
 
-    if (query.exec()) {
-        if (query.next()) {
-
-            QString name = query.value("name").toString();
-            int hp = query.value("hp").toInt();
-            int styrke = query.value("styrke").toInt();
-            int lv = query.value("lv").toInt();
-            int xp = query.value("xp").toInt();
-
-            cname=name;
+            cname = name;
             chp = hp;
             cstyrke = styrke;
             clv = lv;
@@ -125,25 +127,24 @@ void Hero::load(int heroId) {
 
 
             std::cout << "Hero Details:" << std::endl;
-            std::cout << "Name: " << name.toStdString() << std::endl;
+            std::cout << "Name: " << name << std::endl;
             std::cout << "HP: " << hp << std::endl;
             std::cout << "Styrke: " << styrke << std::endl;
             std::cout << "Level: " << lv << std::endl;
             std::cout << "Experience Points: " << xp << std::endl;
         } else {
-            std::cout << "Hero not found with ID: " << heroId << std::endl;
+            std::cout << "Hero not found with ID: " << hero_pick << std::endl;
         }
     } else {
-        std::cout << "Error fetching hero: " << query.lastError().text().toStdString() << std::endl;
+        std::cout << "Error fetching hero: " << mQuery.lastError().text().toStdString() << std::endl;
     }
 }
 
 
 
-
+// fjender en helt. ikke implamenteres endnu
 void Hero::deletehero(){
     int hero_id;
-    //name
     std::cout << "Enter hero id: ";
     if (!(std::cin >> hero_id)) {
         std::cout << "Invalid input for hero id" << std::endl;
@@ -162,7 +163,7 @@ void Hero::deletehero(){
 }
 
 
-
+// viser en helts stats. tager navnet på helten finder den i databasen og printer dem i terminalen
 void Hero::showStats(std::string Hname){
     std::cout << "hero stats:" << std::endl;
 
@@ -200,7 +201,7 @@ void Hero::showStats(std::string Hname){
 
 }
 
-
+// printer alle heros når man vælger at loade en helt så man kan se hvem man kan vælge
 void Hero::printheroes(){
     std::cout << "All heros:" << std::endl;
     if (!mQuery.exec("SELECT * FROM Heros")) {
@@ -225,10 +226,10 @@ void Hero::printheroes(){
 
         qDebug() << qPrintable(idString)
                  << qPrintable(nameString)
-                 << qPrintable(hpString);
-        << qPrintable(styrkeString)
-        << qPrintable(lvString)
-        << qPrintable(xpString);
+                 << qPrintable(hpString)
+                 << qPrintable(styrkeString)
+                 << qPrintable(lvString)
+                 << qPrintable(xpString);
     }
 
 
@@ -237,14 +238,13 @@ void Hero::printheroes(){
 
 
 
-
-void Hero::create() {
+// laver en helt og sætterruværende sats til defult værrdier og sætetr helt in i databasen
+void Hero::create(){
     std::string name;
     unsigned int lv = 1;
     unsigned int xp = 0;
     unsigned int styrke = 2;
     int hp = 10;
-
 
 
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -272,36 +272,29 @@ void Hero::create() {
     }
     std::cout << "hero added successfully" << std::endl;
 }
-
-void Hero::gain(int xp)
-{
-
+// tilføjer deen besejjret fjendes xp til hero og hvis xp er over 1000 eller lige med 1000 så får man bedre stats som opdateres
+void Hero::gain(int xp) {
     cxp += xp;
+    std::cout << "Hero XP: " << cxp << "\n";
 
-    if (cxp>=1000)
-    {
-        cname=name();
+    if (cxp >= 1000) {
         chp += 2;
         cstyrke += 1;
         clv += 1;
-        cxp=0;
+        cxp = 0;
 
+        updateQuery.prepare("UPDATE Heros SET lv = :clv, hp = :chp, styrke = :cstyrke, xp = :cxp WHERE name = :cname");
+        updateQuery.bindValue(":clv", clv);
+        updateQuery.bindValue(":chp", chp);
+        updateQuery.bindValue(":cstyrke", cstyrke);
+        updateQuery.bindValue(":cxp", cxp);
+        updateQuery.bindValue(":cname", QString::fromStdString(cname));
 
-        updateQuery.prepare("UPDATE heroes SET level = :clv, health = :chp, styrke = :cstyrke, xp = :cxp, lv = :clv, WHERE cname = :name");
-        updateQuery.bindValue(":lv", clv);
-        updateQuery.bindValue(":hp", chp);
-        updateQuery.bindValue(":styrke", clv);
-        updateQuery.bindValue(":xp", cxp);
-
-
-            // Execute the prepared query
-            if (updateQuery.exec()) {
-                qDebug() << "Update successful for hero_id:" << heroIdToUpdate;
-                }
-                else {
-                    qDebug() << "Update failed:" << updateQuery.lastError().text();
-                     }
-
-
+        if (updateQuery.exec()) {
+            qDebug() << "Update successful for hero:" << QString::fromStdString(cname)<< "\n";
+        } else {
+            qDebug() << "Update failed:" << updateQuery.lastError().text()<< "\n";
+        }
     }
 }
+
