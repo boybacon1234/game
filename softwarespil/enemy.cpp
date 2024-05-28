@@ -131,7 +131,7 @@ void Enemy::print(){
        int xp = mQuery.value(4).toInt();
 
        QString idString = QString("enemy_id: %1").arg(id).leftJustified(15, ' ');
-       QString nameString = QString("name: %1").arg(name).leftJustified(40, ' ');
+       QString nameString = QString("name: %1").arg(name).leftJustified(15, ' ');
        QString hpString = QString("hp: %1").arg(hp).leftJustified(15, ' ');
        QString styrkeString = QString("styrke: %1").arg(styrke).leftJustified(15, ' ');
        QString xpString = QString("xp: %1").arg(xp).leftJustified(15, ' ');

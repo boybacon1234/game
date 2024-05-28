@@ -1,6 +1,7 @@
 #include <iostream>
 #include "hero.h"
 #include "enemy.h"
+#include "grotte.h"
 #include <QSqlDatabase>
 using namespace std;
 
@@ -50,9 +51,36 @@ int main()
     exp << 900 << 200 << 500 << 1000 << 2000;
     myEnemy.init(ename, ehp, estyrke, exp);
 
+
+
+
+    grotte mygrotte;
+    QVariantList gname, ggold, genemys;
+
+    gname << "easy" << "medium" << "hard";
+    ggold << 10 << 20 << 40;
+
+    // Define enemy lists for each cave
+    QStringList easyEnemies, mediumEnemies, hardEnemies;
+    easyEnemies << "1" << "1" << "1";  // Example enemy IDs for the easy cave
+    mediumEnemies << "2" << "3" << "3";  // Example enemy IDs for the medium cave
+    hardEnemies << "4" << "4" << "4";  // Example enemy IDs for the hard cave
+
+    // Convert QStringLists to comma-separated strings
+    QString easyEnemiesStr = easyEnemies.join(",");
+    QString mediumEnemiesStr = mediumEnemies.join(",");
+    QString hardEnemiesStr = hardEnemies.join(",");
+
+    // Add the enemy strings to genemys
+    genemys << easyEnemiesStr << mediumEnemiesStr << hardEnemiesStr;
+
+    // Initialize the grotte object
+    mygrotte.init(gname, ggold, genemys);
+
     //variabler til spillet
-    int choice,hero_pick,enemy;
+    int choice,hero_pick,enemy,cave;
     bool skip_menu = false;
+    mygrotte.print();
 
     //game menu som kun køre første gang man starter op
     do {
@@ -74,6 +102,9 @@ int main()
             choice =8;
             skip_menu = true;
             break;
+
+
+
         case 2: // printer alle heros med stats så man kan vælge ud fra id, skipper hoved menuen og hopper til case 8
             myHero.printheroes();
             std::cout << "\nPick your hero. select hero_id\n";
@@ -82,6 +113,8 @@ int main()
             choice =8;
             skip_menu = true;
             break;
+
+
         case 3: //loop hvor hero og valgte enemy kæmper indtil en er besejret ( når kampen er slut så skal der trykkes enter en gang til // skal fikses i senere iteration)
             while (myHero.chekhp() > 0 && myEnemy.chekhp() > 0) {
                 std::cout << "Hero HP: " << myHero.chekhp() << "\n";
@@ -100,18 +133,71 @@ int main()
                 myHero.sethp(myHero.getHpForHeroId(myHero.name()));
             } else if (myEnemy.chekhp() <= 0) {
                 std::cout << "Congratulations! You defeated the enemy!\n";
+                myHero.sethp(myHero.getHpForHeroId(myHero.name()));
                 myHero.gain(myEnemy.xp());
                 myHero.showStats(myHero.name()); // skal evt smides sammen med gain så stats ikke printes hver gang
-                myHero.sethp(myHero.getHpForHeroId(myHero.name()));
+
             }
 
             choice = 8;
             break;
 
 
-        case 8: // vælger fjende eller om man vil stoppe
+        case 4: // grotte
+            std::cout << "\n pick cave\n";
+            mygrotte.print();
+            std::cin >> cave;
+            std::cout << "\n entering cave\n";
+            mygrotte.get_grotte(cave);
+
+            std::cout << "Enemies: ";
+            for (int enemy : mygrotte.enemys()) {
+                std::cout << enemy << " ";
+            }
+            std::cout << std::endl;
+
+
+            while ((enemy = mygrotte.get_enemy()) != -1) {
+                    myEnemy.set_stats(enemy);
+                    while (myHero.chekhp() > 0 && myEnemy.chekhp() > 0) {
+                        std::cout << "Hero HP: " << myHero.chekhp() << "\n";
+                        std::cout << "Enemy HP: " << myEnemy.chekhp() << "\n";
+                        waitForEnter();
+                        myEnemy.takeDamage(myHero.attack());
+
+                        if (myEnemy.chekhp() > 0) { // Enemy attacks only if still alive
+                            myHero.takeDamage(myEnemy.attack());
+                        }
+                    }
+                    // Check if the hero or enemy won the battle
+                    if (myHero.chekhp() <= 0) {
+                        std::cout << "You were defeated by the enemy!\n";
+                        myHero.sethp(myHero.getHpForHeroId(myHero.name()));
+                        break;
+                    } else if (myEnemy.chekhp() <= 0) {
+                        std::cout << "Congratulations! You defeated the enemy!\n";
+                        myHero.sethp(myHero.getHpForHeroId(myHero.name()));
+                        myHero.gain(myEnemy.xp());
+                        myHero.showStats(myHero.name()); // Print hero stats
+                    }
+                }
+                if (enemy == -1) {
+                    myHero.gold(mygrotte.gold()); // Award gold if cave is complete
+                    myHero.showStats(myHero.name());
+
+                }
+
+
+
+            choice = 8; // Set choice for returning to the main menu
+            break;
+
+
+
+        case 8: // vælger fjende eller om man vil stoppe eller om man vil til en grotte
             std::cout << "\nPick Enemy:\n";
             myEnemy.print();
+            std::cout << "\nOr cave: 10\n";
             std::cout << "\n or exit 0:\n";
             std::cin >> enemy;
 
@@ -122,10 +208,15 @@ int main()
                 choice = 3;
             } else if (enemy == 0) {
                 choice = 0;
-            } else {
+            }
+            else if (enemy == 10) {
+                choice = 4;
+            }
+            else {
                 std::cout << "invalid choic\n";
                 choice = 8;
             }
+
             break;
 
 
@@ -142,3 +233,4 @@ int main()
 
     return 0;
 }
+

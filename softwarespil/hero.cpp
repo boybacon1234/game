@@ -16,13 +16,15 @@ Hero::Hero(){
                 "hp INT,"
                 "styrke INT,"
                 "lv INT,"
-                "xp INT)");
+                "xp INT,"
+                "gold INT)");
 
     cname = "";
     chp = 0;
     cstyrke = 0;
     clv = 0;
     cxp = 0;
+    cgold =0;
 
 }
 
@@ -34,17 +36,18 @@ Hero::~Hero() {
 */
 
 //funktion til at sætte basic hero in så hvis amn klikker load uden at lave en hero så er der en i forvvejen
-void Hero::init(QVariantList name,QVariantList hp,QVariantList styrke,QVariantList lv,QVariantList xp){
+void Hero::init(QVariantList name,QVariantList hp,QVariantList styrke,QVariantList lv,QVariantList xp, QVariantList gold){
 
 
-    mQuery.prepare("INSERT INTO Heros (name, hp, styrke, lv, xp) VALUES (:name, :hp, :styrke, :lv, :xp)");
+    mQuery.prepare("INSERT INTO Heros (name, hp, styrke, lv, xp, gold) VALUES (:name, :hp, :styrke, :lv, :xp, :gold)");
     mName = name;
     mHp = hp;
     mStyrke = styrke;
     mLv = lv;
     mXp = xp;
+    mGold = gold;
 
-    if (mName.size() != mHp.size() || mName.size() != mStyrke.size() || mName.size() != mLv.size() || mName.size() != mXp.size()) {
+    if (mName.size() != mHp.size() || mName.size() != mStyrke.size() || mName.size() != mLv.size() || mName.size() != mXp.size() || mName.size() != mGold.size()) {
         qDebug() << "Error: Input lists have different sizes";
         return;
     }
@@ -54,6 +57,7 @@ void Hero::init(QVariantList name,QVariantList hp,QVariantList styrke,QVariantLi
         mQuery.bindValue(":styrke", mStyrke.at(i));
         mQuery.bindValue(":lv", mLv.at(i));
         mQuery.bindValue(":xp", mXp.at(i));
+        mQuery.bindValue(":gold", mGold.at(i));
         mQuery.exec();
     }
 }
@@ -102,6 +106,19 @@ void Hero::sethp(int hp){
     chp=hp;
 }
 
+void Hero::gold(int gold){
+
+    cgold+=gold;
+    updateQuery.prepare("UPDATE Heros SET gold = :cgold WHERE name = :cname");
+    updateQuery.bindValue(":cgold", cgold);
+    updateQuery.bindValue(":cname", QString::fromStdString(cname));
+
+    if (updateQuery.exec()) {
+        qDebug() << "Update successful for hero:" << QString::fromStdString(cname)<< "\n";
+    } else {
+        qDebug() << "Update failed:" << updateQuery.lastError().text()<< "\n";
+    }
+}
 
 
 // loader hero
@@ -117,12 +134,14 @@ void Hero::load(int hero_pick) {
             int styrke = mQuery.value("styrke").toInt();
             int lv = mQuery.value("lv").toInt();
             int xp = mQuery.value("xp").toInt();
+            int gold = mQuery.value("gold").toInt();
 
             cname = name;
             chp = hp;
             cstyrke = styrke;
             clv = lv;
             cxp = xp;
+            cgold  = gold;
 
 
 
@@ -132,6 +151,7 @@ void Hero::load(int hero_pick) {
             std::cout << "Styrke: " << styrke << std::endl;
             std::cout << "Level: " << lv << std::endl;
             std::cout << "Experience Points: " << xp << std::endl;
+            std::cout << "gold: " << gold << std::endl;
         } else {
             std::cout << "Hero not found with ID: " << hero_pick << std::endl;
         }
@@ -182,12 +202,14 @@ void Hero::showStats(std::string Hname){
         int styrke = mQuery.value(3).toInt();
         int lv = mQuery.value(4).toInt();
         int xp = mQuery.value(5).toInt();
+        int gold = mQuery.value(6).toInt();
 
-        QString nameString = QString("name: %1").arg(name).leftJustified(40, ' ');
+        QString nameString = QString("name: %1").arg(name).leftJustified(15, ' ');
         QString hpString = QString("hp: %1").arg(hp).leftJustified(15, ' ');
         QString styrkeString = QString("styrke: %1").arg(styrke).leftJustified(15, ' ');
         QString lvString = QString("lv: %1").arg(lv).leftJustified(15, ' ');
         QString xpString = QString("xp: %1").arg(xp).leftJustified(15, ' ');
+        QString goldString = QString("gold: %1").arg(gold).leftJustified(15, ' ');
 
         qDebug()
 
@@ -195,7 +217,8 @@ void Hero::showStats(std::string Hname){
         << qPrintable(hpString)
         << qPrintable(styrkeString)
         << qPrintable(lvString)
-        << qPrintable(xpString);
+        << qPrintable(xpString)
+        << qPrintable(goldString);
     }
 
 
@@ -216,20 +239,23 @@ void Hero::printheroes(){
         int styrke = mQuery.value(3).toInt();
         int lv = mQuery.value(4).toInt();
         int xp = mQuery.value(5).toInt();
+        int gold = mQuery.value(6).toInt();
 
         QString idString = QString("hero_id: %1").arg(id).leftJustified(15, ' ');
-        QString nameString = QString("name: %1").arg(name).leftJustified(40, ' ');
+        QString nameString = QString("name: %1").arg(name).leftJustified(15, ' ');
         QString hpString = QString("hp: %1").arg(hp).leftJustified(15, ' ');
         QString styrkeString = QString("styrke: %1").arg(styrke).leftJustified(15, ' ');
         QString lvString = QString("lv: %1").arg(lv).leftJustified(15, ' ');
         QString xpString = QString("xp: %1").arg(xp).leftJustified(15, ' ');
+        QString goldString = QString("gold: %1").arg(gold).leftJustified(15, ' ');
 
         qDebug() << qPrintable(idString)
                  << qPrintable(nameString)
                  << qPrintable(hpString)
                  << qPrintable(styrkeString)
                  << qPrintable(lvString)
-                 << qPrintable(xpString);
+                 << qPrintable(xpString)
+                 << qPrintable(goldString);
     }
 
 
@@ -245,6 +271,7 @@ void Hero::create(){
     unsigned int xp = 0;
     unsigned int styrke = 2;
     int hp = 10;
+    int gold =0;
 
 
     std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -258,14 +285,16 @@ void Hero::create(){
     cstyrke = styrke;
     clv = lv;
     cxp = xp;
+    cgold = gold;
 
-    mQuery.prepare("INSERT INTO Heros (name, hp, styrke, lv, xp) "
-                   "VALUES (:name, :hp, :styrke, :lv, :xp)");
+    mQuery.prepare("INSERT INTO Heros (name, hp, styrke, lv, xp, gold) "
+                   "VALUES (:name, :hp, :styrke, :lv, :xp, :gold)");
     mQuery.bindValue(":name", QString::fromStdString(name));
     mQuery.bindValue(":hp", hp);
-    mQuery.bindValue(":styre", styrke);
+    mQuery.bindValue(":styrke", styrke);
     mQuery.bindValue(":lv", lv);
     mQuery.bindValue(":xp", xp);
+    mQuery.bindValue(":gold", gold);
         if (!mQuery.exec()) {
         std::cout << "Error adding hero: " << mQuery.lastError().text().toStdString() << std::endl;
         return;

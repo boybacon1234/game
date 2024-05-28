@@ -17,10 +17,10 @@ public:
 
 
     Hero();
-    /*
-    ~Hero();
-*/
-    void init(QVariantList name, QVariantList hp, QVariantList styrke, QVariantList lv, QVariantList xp);
+
+   // ~Hero();
+
+    void init(QVariantList name, QVariantList hp, QVariantList styrke, QVariantList lv, QVariantList xp, QVariantList gold);
 
     void create();
 
@@ -48,6 +48,8 @@ public:
 
     void showStats(std::string Hname);
 
+    void gold(int gold);
+
 private:
 
         std::string cname;
@@ -55,7 +57,8 @@ private:
         int cstyrke;
         int clv;
         int cxp;
-        QVariantList mName, mHp, mStyrke, mLv, mXp;
+        int cgold;
+        QVariantList mName, mHp, mStyrke, mLv, mXp, mGold;
         QSqlQuery mQuery, assignmentQuery, updateQuery, durationQuery;
 
 };
