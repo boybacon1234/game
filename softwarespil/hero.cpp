@@ -17,7 +17,8 @@ Hero::Hero(){
                 "styrke INT,"
                 "lv INT,"
                 "xp INT,"
-                "gold INT)");
+                "gold INT,"
+                "MN int)");
 
     cname = "";
     chp = 0;
@@ -25,6 +26,10 @@ Hero::Hero(){
     clv = 0;
     cxp = 0;
     cgold =0;
+    //cMN =0;
+
+
+    //MN magic nivue
 
 }
 
@@ -311,6 +316,7 @@ void Hero::gain(int xp) {
         cstyrke += 1;
         clv += 1;
         cxp = 0;
+        cMN  += 2;
 
         updateQuery.prepare("UPDATE Heros SET lv = :clv, hp = :chp, styrke = :cstyrke, xp = :cxp WHERE name = :cname");
         updateQuery.bindValue(":clv", clv);

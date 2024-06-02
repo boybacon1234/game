@@ -4,6 +4,7 @@
 #include "grotte.h"
 #include <QSqlDatabase>
 using namespace std;
+//shop.h shop.cpp magic.h magic.cpp
 
 void waitForEnter() {
     std::cout << "Press Enter to fight\n";
@@ -78,7 +79,7 @@ int main()
     mygrotte.init(gname, ggold, genemys);
 
     //variabler til spillet
-    int choice,hero_pick,enemy,cave;
+    int choice,hero_pick,enemy,cave, item;
     bool skip_menu = false;
     mygrotte.print();
 
@@ -191,13 +192,28 @@ int main()
 
             choice = 8; // Set choice for returning to the main menu
             break;
-
-
+/*
+        case 5:
+            std::cout << "\n welcome to the shop of magic\n";
+            std::cout << "\n what would you like\n";
+            shop.print();
+            std::cin >> item;
+            if (shop.pick(item,hero.gold(),hero.magic())){
+                    std::cout << "\n enjoy your magic\n";
+                    hero.get_magic(item);
+                    hero.giv_gold(shop.cost(item));
+            }
+            else{
+                    std::cout << "\n you cannot buy this magic\n";
+            }
+            break;
+*/
 
         case 8: // vælger fjende eller om man vil stoppe eller om man vil til en grotte
             std::cout << "\nPick Enemy:\n";
             myEnemy.print();
             std::cout << "\nOr cave: 10\n";
+           // std::cout << "\nOr shop: 11\n";
             std::cout << "\n or exit 0:\n";
             std::cin >> enemy;
 
@@ -227,8 +243,6 @@ int main()
             std::cout << "Invalid choice! Please try again.\n";
         }
     } while (choice != 0);
-
-
 
 
     return 0;

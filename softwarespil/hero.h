@@ -58,6 +58,7 @@ private:
         int clv;
         int cxp;
         int cgold;
+        int cMN;
         QVariantList mName, mHp, mStyrke, mLv, mXp, mGold;
         QSqlQuery mQuery, assignmentQuery, updateQuery, durationQuery;
 

@@ -11,6 +11,7 @@ if(NOT Qt5_FOUND)
 endif()
 
 add_executable(softwarespil main.cpp hero.h hero.cpp enemy.h enemy.cpp grotte.h grotte.cpp)
+
 target_link_libraries(softwarespil Qt5::Core Qt5::Sql)
 
 

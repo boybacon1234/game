@@ -20,11 +20,13 @@ Enemy::Enemy(){
                 "name CHAR(125),"
                 "hp INT,"
                 "styrke INT UNSIGNED,"
-                "xp INT UNSIGNED)");
+                "xp INT UNSIGNED,"
+                "element CHAR(125))");
     cname = "";
     chp = 0;
     cstyrke = 0;
     cxp = 0;
+    //celement="";
 }
 //destructor
 Enemy::~Enemy(){
